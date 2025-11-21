@@ -34,7 +34,11 @@ class TimestampMixin:
 
 
 
-async_engine = create_async_engine(settings.async_DB_URL, echo=True)
+async_engine = create_async_engine(
+    settings.async_DB_URL,
+    echo=True
+)
+
 async_session = async_sessionmaker(
     autoflush=False,
     autocommit=False,

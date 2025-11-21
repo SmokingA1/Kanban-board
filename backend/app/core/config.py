@@ -11,14 +11,14 @@ class Settings(BaseSettings):
 
     DATABASE_USER: str
     DATABASE_PASSWORD: str
-    DATABASE_HOST: str = "localhost"
+    DATABASE_HOST: str
     DATABASE_PORT: int = 5432
     DATABASE_DB_NAME: str
 
     @property
     def async_DB_URL(self):
-        return f"postgresql+asyncpg://{self.DATABASE_USER}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_DB_NAME}"
-    
+        return f"postgresql+asyncpg://{self.DATABASE_USER}:{self.DATABASE_PASSWORD}@{self.DATABASE_HOST}:{self.DATABASE_PORT}/{self.DATABASE_DB_NAME}?async_fallback=true"
+
 
 settings = Settings()
 

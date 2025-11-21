@@ -23,13 +23,13 @@ class User(Base, TimestampMixin):
     avatar_url: Mapped[str] = mapped_column(String(255), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
-    role: Mapped[UserRoleEnum] = mapped_column(Enum(UserRoleEnum), nullable=False, default=UserRoleEnum.USER)
+    role: Mapped[UserRoleEnum] = mapped_column(Enum(UserRoleEnum, name="user_role"), nullable=False, default=UserRoleEnum.USER)
 
-    own_projects: Mapped[list["Project"]] = relationship(back_populates="owner", cascade="delete-orphan") #own projects what user had created
-    projects: Mapped[list["ProjectParticipant"]] = relationship(back_populates="user", cascade="delete-orphan") # projects when user is participant
-    tasks: Mapped[list["TaskAssignment"]] = relationship(back_populates="assignee", cascade="delete-orphan")
-    created_tasks: Mapped[list["Task"]] = relationship(back_populates="creator", cascade="delete-orphan")
-    comments: Mapped[list["Comment"]] = relationship(back_populates="user", cascade="delete-orphan")
+    own_projects: Mapped[list["Project"]] = relationship(back_populates="owner", cascade="all, delete-orphan") #own projects what user had created
+    projects: Mapped[list["ProjectParticipant"]] = relationship(back_populates="user", cascade="all, delete-orphan") # projects when user is participant
+    tasks: Mapped[list["TaskAssignment"]] = relationship(back_populates="assignee", cascade="all, delete-orphan")
+    created_tasks: Mapped[list["Task"]] = relationship(back_populates="creator", cascade="all, delete-orphan")
+    comments: Mapped[list["Comment"]] = relationship(back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User(id='{self.id}', username='{self.username}', email='{self.email}')>"
@@ -42,11 +42,11 @@ class Project(Base, TimestampMixin):
     owner_id: Mapped[PyUUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE", name="fk_projects_users_id"))
     name: Mapped[str] = mapped_column(String(50), nullable=False, index=True)
     description: Mapped[str] = mapped_column(String(255), nullable=True)
-    visibility: Mapped[ProjectVisibilityEnum] = mapped_column(Enum(ProjectVisibilityEnum, name="projectvisibility"), nullable=False, default=ProjectVisibilityEnum.PUBLIC) 
+    visibility: Mapped[ProjectVisibilityEnum] = mapped_column(Enum(ProjectVisibilityEnum, name="project_visibility"), nullable=False, default=ProjectVisibilityEnum.PUBLIC) 
 
     owner: Mapped["User"] = relationship(back_populates="own_projects")
-    participants: Mapped[list["ProjectParticipant"]] = relationship(back_populates="project", cascade="delete-orphan")
-    boards: Mapped[list["Board"]] = relationship(back_populates="project", cascade="delete-orphan")
+    participants: Mapped[list["ProjectParticipant"]] = relationship(back_populates="project", cascade="all, delete-orphan")
+    boards: Mapped[list["Board"]] = relationship(back_populates="project", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Project(id='{self.id}', name='{self.name}')>"
@@ -58,13 +58,13 @@ class ProjectParticipant(Base, TimestampMixin):
     project_id: Mapped[PyUUID] = mapped_column(ForeignKey("projects.id", ondelete="CASCADE", name="fk_project_participants_projects_id"), nullable=False, index=True)
     user_id: Mapped[PyUUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE", name="fk_project_participants_users_id"), nullable=False, index=True)
     joined_at: Mapped[datetime] = mapped_column(TZDateTime(), default=datetime.now(timezone.utc))
-    role: Mapped [PParticipantRoleEnum] = mapped_column(Enum(PParticipantRoleEnum, name="pparticipantrole"), nullable=False, default=PParticipantRoleEnum.USER)
+    role: Mapped[PParticipantRoleEnum] = mapped_column(Enum(PParticipantRoleEnum, name="pparticipant_role"), nullable=False, default=PParticipantRoleEnum.USER)
 
     project: Mapped["Project"] = relationship(back_populates="participants")
     user: Mapped["User"] = relationship(back_populates="projects")
 
     __table_args__ = (
-        PrimaryKeyConstraint("user_id", "project_id")
+        PrimaryKeyConstraint("user_id", "project_id"),
     )
 
     def __repr__(self):
@@ -79,7 +79,7 @@ class Board(Base, TimestampMixin):
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     
     project: Mapped["Project"] = relationship(back_populates="boards")
-    columns: Mapped[list["Column"]] = relationship(back_populates="board", cascade="delete-orphan")
+    columns: Mapped[list["Column"]] = relationship(back_populates="board", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Board(id='{self.id}', project_id='{self.project_id}', name='{self.name}')>"
@@ -92,11 +92,11 @@ class Column(Base, TimestampMixin):
     board_id: Mapped[PyUUID] = mapped_column(ForeignKey("boards.id", ondelete="CASCADE", name="fk_columns_boards_id"), nullable=False)
     name: Mapped[str] = mapped_column(String(25), nullable=False)
     order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    status: Mapped[ColumnStatusEnum] = mapped_column(Enum(ColumnStatusEnum), nullable=False, default=ColumnStatusEnum.TO_DO)
+    status: Mapped[ColumnStatusEnum] = mapped_column(Enum(ColumnStatusEnum, name="column_status"), nullable=False, default=ColumnStatusEnum.TO_DO)
     wip_limit: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     board: Mapped["Board"] = relationship(back_populates="columns")
-    tasks: Mapped[list["Task"]] = relationship(back_populates="column", cascade="delete-orphan")
+    tasks: Mapped[list["Task"]] = relationship(back_populates="column", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<Column(id='{self.id}', board_id='{self.board_id}', name='{self.name}')>"
@@ -110,15 +110,15 @@ class Task(Base, TimestampMixin):
     created_by: Mapped[PyUUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE", name="fk_tasks_users_id"))
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=True)
-    priority: Mapped[TaskPriorityEnum] = mapped_column(Enum(TaskPriorityEnum), nullable=False, default=TaskPriorityEnum.LOW)
+    priority: Mapped[TaskPriorityEnum] = mapped_column(Enum(TaskPriorityEnum, name="task_priority"), nullable=False, default=TaskPriorityEnum.LOW)
     order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     due_date: Mapped[datetime] = mapped_column(TZDateTime(), nullable=False)
     completed_at: Mapped[datetime | None] = mapped_column(TZDateTime(), nullable=True)
 
     column: Mapped["Column"] = relationship(back_populates="tasks")
     creator: Mapped["User"] = relationship(back_populates="created_tasks")
-    assignments: Mapped[list["TaskAssignment"]] = relationship(back_populates="task", cascade="delete-orphan")
-    comments: Mapped[list["Comment"]] = relationship(back_populates="task", cascade="delete-orphan")
+    assignments: Mapped[list["TaskAssignment"]] = relationship(back_populates="task", cascade="all, delete-orphan")
+    comments: Mapped[list["Comment"]] = relationship(back_populates="task", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<Task(id='{self.id}', column_id='{self.column_id}', name='{self.name}', priority='{self.priority}')>"
@@ -127,19 +127,19 @@ class Task(Base, TimestampMixin):
 class TaskAssignment(Base):
     __tablename__ = "task_assignments"
 
-    task_id: Mapped[PyUUID] = mapped_column(ForeignKey("tasks.id", ondelete="CASCADE", name="fk_task_assignments_tasks_id"), nullable=False)
-    assignee_id: Mapped[PyUUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE", name="fk_task_assignments_users_id"), nullable=False)
+    task_id: Mapped[PyUUID] = mapped_column(ForeignKey("tasks.id", ondelete="CASCADE", name="fk_task_assignments_tasks_id"), nullable=False, index=True)
+    assignee_id: Mapped[PyUUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE", name="fk_task_assignments_users_id"), nullable=False, index=True)
     assigned_at: Mapped[datetime] = mapped_column(TZDateTime(), default=datetime.now(timezone.utc))
 
     assignee: Mapped["User"] = relationship(back_populates="tasks")
     task: Mapped["Task"] = relationship(back_populates="assignments")
 
     __table_args__ = (
-        PrimaryKeyConstraint("task_id", "assignee_id")
+        PrimaryKeyConstraint("task_id", "assignee_id"),
     )
 
     def __repr__(self):
-        return f"<TaskAssignment(task_id='{self.task_id}', assigned_id='{self.assignee_id}')>"
+        return f"<TaskAssignment(task_id='{self.task_id}', assignee_id='{self.assignee_id}')>"
 
 
 class Comment(Base, TimestampMixin):
