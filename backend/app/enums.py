@@ -10,6 +10,14 @@ class ProjectVisibilityEnum(str, PyEnum):
     PRIVATE = "private"
 
 
+class TaskStatusEnum(str, PyEnum):
+    BACKLOG = "backlog"
+    TO_DO = "to_do"
+    IN_RPOGRESS = "in_progress"
+    TESTING = "testing"
+    DONE = "done"
+
+
 class ColumnStatusEnum(str, PyEnum):
     BACKLOG = "backlog"
     TO_DO = "to_do"

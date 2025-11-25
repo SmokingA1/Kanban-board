@@ -7,7 +7,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 
-from app.enums import UserRoleEnum, ProjectVisibilityEnum, ColumnStatusEnum, TaskPriorityEnum, PParticipantRoleEnum
+from app.enums import UserRoleEnum, ProjectVisibilityEnum, ColumnStatusEnum, TaskStatusEnum, TaskPriorityEnum, PParticipantRoleEnum
 from app.core.database import Base, TimestampMixin, TZDateTime
 
 
@@ -110,6 +110,7 @@ class Task(Base, TimestampMixin):
     created_by: Mapped[PyUUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE", name="fk_tasks_users_id"))
     name: Mapped[str] = mapped_column(String(50), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=True)
+    status: Mapped[TaskStatusEnum] = mapped_column(Enum(TaskStatusEnum, name="task_status"), nullable=False, default=TaskStatusEnum.TO_DO)
     priority: Mapped[TaskPriorityEnum] = mapped_column(Enum(TaskPriorityEnum, name="task_priority"), nullable=False, default=TaskPriorityEnum.LOW)
     order: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     due_date: Mapped[datetime] = mapped_column(TZDateTime(), nullable=False)
