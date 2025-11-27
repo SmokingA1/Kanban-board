@@ -1,3 +1,4 @@
+from typing import ClassVar
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings): 
@@ -14,6 +15,10 @@ class Settings(BaseSettings):
     DATABASE_HOST: str
     DATABASE_PORT: int = 5432
     DATABASE_DB_NAME: str
+
+    SECRET_KEY: str
+    ALGORITHM: str = "H256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: ClassVar = 60 * 24 * 7
 
     @property
     def async_DB_URL(self):
