@@ -19,7 +19,7 @@ async def get_users(
     page: int = 1,
     limit: int = 20,
 ) -> List[User]:
-    query = select(User)
+    query = select(User).order_by(User.created_at)
     offset = (page - 1) * limit
     query = query.offset(offset).limit(limit)
     
