@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import ParticlesBackground from '@/components/shared/ParticlesBackground';
+import ParticlesBackground from '@/src/components/shared/ParticlesBackground';
 
 export default function WorkspacesPage() {
   const router = useRouter();
@@ -16,6 +16,7 @@ export default function WorkspacesPage() {
     password: ''
   });
 
+  const dromMenuRef = useRef<HTMLDivElement | null>(null);
   
   const user = {
     name: 'John Doe',
@@ -76,6 +77,20 @@ export default function WorkspacesPage() {
     router.push('/auth/login');
   };
 
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+
+      if (dromMenuRef.current && !dromMenuRef.current.contains(e.target as Node)) {
+        setIsProfileOpen(false);
+      }
+
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [])
+
+
   return (
     <div className="relative min-h-screen overflow-hidden">
       <ParticlesBackground 
@@ -115,12 +130,12 @@ export default function WorkspacesPage() {
                   
                   {/* Dropdown Menu */}
                   <div 
-                    className="absolute right-0 mt-2 w-64 backdrop-blur-xl rounded-xl shadow-2xl border overflow-hidden"
+                    className="absolute right-0 mt-2 w-64 backdrop-blur-xl rounded-xl shadow-2xl border overflow-hidden z-30"
                     style={{ 
                       backgroundColor: 'rgba(52, 78, 65, 0.95)',
                       borderColor: 'rgba(218, 215, 205, 0.2)',
-                      zIndex: 50
                     }}
+                    ref={dromMenuRef}
                   >
                     {/* User Info */}
                     <div className="p-4 border-b" style={{ borderColor: 'rgba(218, 215, 205, 0.1)' }}>
