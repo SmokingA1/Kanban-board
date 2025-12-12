@@ -219,3 +219,10 @@ class CommentRead(CommentBase):
 class CommentUpdate(BaseModel):
     content: str | None = Field(None, min_length=1, max_length=500)
 
+
+class TokenPayload(BaseModel):
+    sub: str
+    exp: float
+
+class Message(BaseModel):
+    data: str
