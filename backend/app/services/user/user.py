@@ -53,19 +53,21 @@ async def get_user_by_phone_number(
 async def create_user(
     *, 
     db: AsyncSession,
-    user_create: UserCreate
+    user_create: UserCreate,
 ) -> User | None:
+    hashed_password_for = hash_password(user_create.password)
+   
     new_user = User(
         username=user_create.username,
         full_name=user_create.full_name,
-        hashed_password=hash_password(user_create.password),
+        hashed_password=hashed_password_for,
         email=user_create.email,
         phone_number=user_create.phone_number,
     )
     
     db.add(new_user)
-    await db.execute(new_user)
     await db.commit()
+    await db.refresh(new_user)
 
     return new_user
 
@@ -89,7 +91,7 @@ async def update_user_by_id(
             setattr(db_user, k, v)
     
     await db.commit()
-    await db.refresh(update_data)
+    await db.refresh(db_user)
 
     return db_user
 

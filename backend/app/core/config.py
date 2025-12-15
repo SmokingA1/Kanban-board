@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     DATABASE_DB_NAME: str
 
     SECRET_KEY: str
-    ALGORITHM: str = "H256"
+    ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: ClassVar = 60 * 24 * 7
 
     @property
